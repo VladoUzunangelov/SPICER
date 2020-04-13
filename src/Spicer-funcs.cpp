@@ -1,7 +1,6 @@
 // (c) Vlado Uzunangelov 2016
 // uzunangelov@soe.ucsc.edu
 
-#include <Rcpp.h>
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 
