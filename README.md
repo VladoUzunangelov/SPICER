@@ -44,7 +44,7 @@ history     :  contains history of primal objective, dual objective, number of a
 
 Citation:  
 1.Suzuki,Tomioka.SpicyMKL: a fast algorithm for Multiple Kernel Learning with thousands of kernels. Mach Learn (2011) 85:77–108  
-2. https://github.com/VladoUzunangelov/SpicyMKLR
+2. https://github.com/VladoUzunangelov/SPICER
 
 
 (c) Vlado Uzunangelov 2016  
