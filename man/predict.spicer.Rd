@@ -12,7 +12,7 @@ type - applicable for classification (binary & multiclass) only - "response" ret
 }
 \value{
 Output is a prediction vector of length nTest computed by
-f(x) = \sum{model$sorted_kern_weigth[i]*KTest[,,i]}%*%model$comb_alpha + model$beta
+f(x) = sum{model$sorted_kern_weigth[i]*KTest[,,i]}*model$comb_alpha + model$beta
 if prediction task is 'regression', output is continuous values
 if prediction task is 'classification' and type is 'response' - output are predicted labels
 if prediction task is 'classification' and type is 'probability' - output is probabilities of positive class (model$opt$classes[2])
