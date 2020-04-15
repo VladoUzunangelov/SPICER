@@ -96,9 +96,6 @@ spicer <- function(K, yapp, C, opt = list()) {
   if (is.null(opt$includeSubW))
     opt$includeSubW <- FALSE
 
-  if(is.null(opt$wghts)) opt$wghts <- rep(1,length(yapp))
-  opt$wghts <- opt$wghts*length(yapp)/sum(opt$wghts)
-
   opt$C <- C
   opt$nkern <- dim(K)[3]
 
@@ -120,10 +117,8 @@ spicer.multiclass <- function(K, yapp, C, opt) {
 
     res <- foreach(i = 1:ncol(combos)) %do% {
         idx <- yapp %in% combos[, i]
-        opts <- opt
-        if (!is.null(opts$wghts))
-            opts$wghts <- opts$wghts[idx]
-        spicer.default(K[idx, idx, , drop = FALSE], factor(yapp[idx], levels = combos[, i]), C, opts)
+        spicer.default(K[idx, idx, , drop = FALSE],
+                       factor(yapp[idx], levels = combos[, i]), C, opt)
 
     }
 
@@ -162,7 +157,7 @@ spicer.default <- function(K, yapp, C, opt) {
     oneM <- rep(1, M)  #matrix(1,nrow=1,ncol=M)
 
     ## lagrangian for equality constraint on new variable z (rho in SpicyMKL Tomioka Suzuki JMLR 2011)
-    rho <- -yapp * opt$wghts/2
+    rho <- -yapp/2
 
     ## kernel weights divided by gamma (alpha/gamma in SpicyMKL Tomioka Suzuki JMLR 2011)
     krnlWMod <- matrix(0, nrow = N, ncol = M)
@@ -200,12 +195,12 @@ spicer.default <- function(K, yapp, C, opt) {
             sumrho <- sum(rho)
             yrho <- yapp * rho
 
-            fval <- funceval(opt$loss, normj, yapp, opt$wghts, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func)
+            fval <- funceval(opt$loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func)
 
-            grad <- gradient(opt$loss, yapp, opt$wghts, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset)
+            grad <- gradient(opt$loss, yapp, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset)
 
             switch(opt$optname, Newton = {
-                hess <- hessian(opt$loss, yapp, opt$wghts, yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox.deriv, activeset)
+                hess <- hessian(opt$loss, yapp, yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox.deriv, activeset)
 
                 ## find descent direction
 
@@ -274,7 +269,7 @@ spicer.default <- function(K, yapp, C, opt) {
 
             sumrho <- sum(rho)
             yrho <- yapp * rho
-            fval <- funceval(opt$loss, normj, yapp, opt$wghts, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func)
+            fval <- funceval(opt$loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func)
 
             ## compute step length in descent direction via Armijo's rule can be moved to a separate function, but calculation depends on too many arguments, some of
             ## which large - performance hit for slight increase in modularity
@@ -313,11 +308,11 @@ spicer.default <- function(K, yapp, C, opt) {
                 normj[tmpActiveset] <- sqrt(pmax(0, old$normj[tmpActiveset]^2 + 2 * stepL * dirDotWDot[tmpActiveset] + (stepL^2) * dirNorm[tmpActiveset]))
                 pr <- prox(normj * cgamma, C, cgamma)
 
-                fval <- funceval(opt$loss, normj, yapp, opt$wghts, rho, yapp * rho, sum(rho), cgamma, cgammab, cb, pr, C, reg.func)
+                fval <- funceval(opt$loss, normj, yapp, rho, yapp * rho, sum(rho), cgamma, cgammab, cb, pr, C, reg.func)
                 sumrho <- sum(rho)
                 yrho <- yapp * rho
                 activeset <- which(pr > 0)
-                grad <- gradient(opt$loss, yapp, opt$wghts, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset)
+                grad <- gradient(opt$loss, yapp, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset)
             }
             ## end of Wolfe conditions line search
 
@@ -383,9 +378,9 @@ spicer.default <- function(K, yapp, C, opt) {
             primalArg <- primalArg + K[, , i] %*% krnlW[, i]
         }
 
-        primalVal <- primal.obj(opt$loss, yapp, opt$wghts, primalArg, length(activeset), reg.func, krnlWNorm, C)
+        primalVal <- primal.obj(opt$loss, yapp, primalArg, length(activeset), reg.func, krnlWNorm, C)
 
-        dualVal <- dual.obj(opt$loss, yapp, opt$wghts, rhoMod, rhoNorm, reg.dual, C)
+        dualVal <- dual.obj(opt$loss, yapp, rhoMod, rhoNorm, reg.dual, C)
 
         dualGap <- if (is.infinite(primalVal))
             Inf else abs(primalVal - dualVal)/abs(primalVal)
@@ -530,8 +525,10 @@ spicer.default <- function(K, yapp, C, opt) {
 ## Spicer Helpers#############################
 
 ## Evaluates the augmented dual proximal (in fact the negative of it since we ar eminimizing)
-funceval <- function(loss, normj, yapp, wghts, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func) {
-    val <- switch(loss, logit = logit.loss(check.yrho(yrho, wghts), wghts), square = square.loss(yapp, wghts, rho))
+funceval <- function(loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func) {
+    val <- switch(loss,
+                  logit = logit.loss(check.yrho(yrho)),
+                  square = square.loss(yapp, rho))
     ## they use Proposition 1 (eqn 23) in SpicyMKL Tomioka Suzuki JMLR 2011 to convert Moreau envelope of the convex conjugate into moreau envelope of
     ## norm(alpha+gamma*rho)^2/2 - moreau envelope of regularization function the latter can then be evaluated at prox(norm(alpha+gamma*rho)) as in Boyd
     ## Promixal algorithms monograph, 3.1 , right before eqn 3.2
@@ -544,8 +541,10 @@ funceval <- function(loss, normj, yapp, wghts, rho, yrho, sumrho, cgamma, cgamma
 
 ## Evaluates gradient of the augmented dual proximal objective function
 
-gradient <- function(loss, yapp, wghts, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset) {
-    val <- switch(loss, logit = logit.grad(yrho, yapp, wghts), square = square.grad(yapp, wghts, rho))
+gradient <- function(loss, yapp, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset) {
+    val <- switch(loss,
+                  logit = logit.grad(yrho, yapp),
+                  square = square.grad(rho, yapp))
 
     for (i in activeset) {
         val <- val + wdot[, i] * (pr[i]/normj[i])
@@ -558,8 +557,10 @@ gradient <- function(loss, yapp, wghts, yrho, rho, sumrho, cgamma, cgammab, cb, 
 
 ## Evaluates Hessian on augmented dual proximal objective function
 
-hessian <- function(loss, yapp, wghts, yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox.deriv, activeset) {
-    val <- switch(loss, logit = logit.hess(yrho, wghts), square = square.hess(length(yapp), wghts))
+hessian <- function(loss, yapp,  yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox.deriv, activeset) {
+    val <- switch(loss,
+                  logit = logit.hess(yrho),
+                  square = square.hess(length(yapp)))
 
     dpr <- prox.deriv(normj * cgamma, C, cgamma)
     w1 <- pr/normj
@@ -577,12 +578,12 @@ hessian <- function(loss, yapp, wghts, yrho, cgamma, cgammab, C, K, normj, wdot,
 }
 
 
-dual.obj <- function(loss, yapp, wghts, rho, rhoNorm, reg.dual, C) {
+dual.obj <- function(loss, yapp, rho, rhoNorm, reg.dual, C) {
 
     dual <- switch(loss, logit = {
-        dual <- -logit.loss(check.yrho(yapp * rho, wghts), wghts) - sum(reg.dual(rhoNorm, C))
+        dual <- -logit.loss(check.yrho(yapp * rho)) - sum(reg.dual(rhoNorm, C))
     }, square = {
-        dual <- -square.loss(yapp, wghts, rho) - sum(reg.dual(rhoNorm, C))
+        dual <- -square.loss(yapp, rho) - sum(reg.dual(rhoNorm, C))
     })
 
     return(dual)
@@ -591,8 +592,10 @@ dual.obj <- function(loss, yapp, wghts, rho, rhoNorm, reg.dual, C) {
 
 ## Primal Obj Funcitons########################### z here has the opposite sign to the MATLAB code (but the right one theoretically) - the opposite sign
 ## is compensated for by negating z in the argument pre-processing
-primal.obj <- function(loss, yapp, wghts, z, nactive, reg.func, krnlWNorm, C) {
-    primal <- switch(loss, logit = sum(wghts * log(1 + exp(-yapp * z))), square = sum(wghts * (yapp - z)^2) * 0.5)
+primal.obj <- function(loss, yapp, z, nactive, reg.func, krnlWNorm, C) {
+    primal <- switch(loss,
+                     logit = sum(log(1 + exp(-yapp * z))),
+                     square = sum((yapp - z)^2) * 0.5)
 
     if (nactive > 0) {
         primal <- primal + sum(reg.func(krnlWNorm, C))
@@ -603,11 +606,11 @@ primal.obj <- function(loss, yapp, wghts, z, nactive, reg.func, krnlWNorm, C) {
 
 ## for the logit implementation, yrho needs to stay which (0,1), so
 ##-yrho needs to stay within (-1,0) (all open intervals!!)
-check.yrho <- function(yrho, wghts) {
+check.yrho <- function(yrho) {
     ## this is to make sure yrho falls within the required constraint
     ##-1<-yrho<0,
     ## which is the negated actual constraint 0>yrho>1
-    pmin(pmax(yrho, -wghts + 1e-07), -1e-07)
+    pmin(pmax(yrho, -1 + 1e-07), -1e-07)
 }
 
 
@@ -621,21 +624,21 @@ check.yrho <- function(yrho, wghts) {
 ## aka dual/convex conjugate of logit loss see see table 1 in Tomioka 2009 - Dual Augmented Lagrangian also Suzuki 2011 Spicy MKL eqn(16) difference is
 ## that negative sign of rho is accounted for in function calculation
 
-logit.loss <- function(yrho, wghts) {
-    loss <- sum((wghts + yrho) * log(wghts + check.yrho(yrho, wghts)) - yrho * log(-yrho) - wghts * log(wghts))
+logit.loss <- function(yrho) {
+    loss <- sum((1 + yrho) * log(1 + yrho) - yrho * log(-yrho))
     return(loss)
 }
 
 ## different from table 1 in Tomioka 2009 - Dual Augmented Lagrangian again because of the substitution of rho for negative rho also this is technically
 ## -logit.grad, even with the variable substitution!!
-logit.grad <- function(yrho, yapp, wghts) {
-    grad <- yapp * log((wghts + check.yrho(yrho, wghts))/(-yrho))
+logit.grad <- function(yrho, yapp) {
+    grad <- yapp * log((1 + yrho)/(-yrho))
     return(grad)
 }
 
 ## remember, the logit uses binary {-1,1} y labels, so the y^2 term that should have been in the numerator disappears!!
-logit.hess <- function(yrho, wghts) {
-    hess <- diag(wghts/(-yrho * (wghts + yrho)))
+logit.hess <- function(yrho) {
+    hess <- diag(1/(-yrho * (1 + yrho)))
     return(hess)
 }
 
@@ -647,18 +650,18 @@ svm.loss <- function(yrho) {
 
 
 ## Square Loss################
-square.loss <- function(yapp, wghts, rho) {
-    loss <- 0.5 * rho %*% (rho/wghts) + rho %*% yapp
+square.loss <- function(yapp, rho) {
+    loss <- 0.5 * rho %*% rho + rho %*% yapp
     return(loss)
 }
 
-square.grad <- function(yapp, wghts, rho) {
-    grad <- rho/wghts + yapp
+square.grad <- function(rho, yapp) {
+    grad <- rho + yapp
     return(grad)
 }
 
-square.hess <- function(N, wghts) {
-    hess <- diag(nrow = N)/wghts
+square.hess <- function(N) {
+    hess <- diag(nrow = N)
     return(hess)
 }
 
