@@ -1,7 +1,9 @@
 // (c) Vlado Uzunangelov 2016
 // uzunangelov@soe.ucsc.edu
 
+
 #include <RcppArmadillo.h>
+#include <Rcpp.h>
 using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]

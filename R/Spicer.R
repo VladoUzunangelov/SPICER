@@ -43,7 +43,7 @@ spicer <- function(K, yapp, C, opt = list()) {
     C = C[1]
   }
 
-
+  if (is.null(opt$loss)) opt$loss <- if (length(unique(yapp)) == 2) "logit" else "square"
   ## convert labels to -1,1
   if (opt$loss %in% c("logit")) {
     ## change a factor to a numeric vector
@@ -143,8 +143,6 @@ spicer.multiclass <- function(K, yapp, C, opt) {
 #######################################################
 
 spicer.default <- function(K, yapp, C, opt) {
-
-  if (is.null(opt$loss)) opt$loss <- if (length(unique(yapp)) == 2) "logit" else "square"
 
     ## selection of regularization functions
     expand(get.reg.funcs(opt$regname))
