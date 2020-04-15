@@ -96,6 +96,9 @@ spicer <- function(K, yapp, C, opt = list()) {
   if (is.null(opt$includeSubW))
     opt$includeSubW <- FALSE
 
+  if(is.null(opt$wghts)) opt$wghts <- rep(1,length(yapp))
+  opt$wghts <- opt$wghts*length(yapp)/sum(opt$wghts)
+
   opt$C <- C
   opt$nkern <- dim(K)[3]
 
