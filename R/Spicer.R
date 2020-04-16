@@ -625,14 +625,14 @@ check.yrho <- function(yrho) {
 ## that negative sign of rho is accounted for in function calculation
 
 logit.loss <- function(yrho) {
-    loss <- sum((1 + yrho) * log(1 + yrho) - yrho * log(-yrho))
+    loss <- sum((1 + yrho) * log(1 + check.yrho(yrho)) - yrho * log(-yrho))
     return(loss)
 }
 
 ## different from table 1 in Tomioka 2009 - Dual Augmented Lagrangian again because of the substitution of rho for negative rho also this is technically
 ## -logit.grad, even with the variable substitution!!
 logit.grad <- function(yrho, yapp) {
-    grad <- yapp * log((1 + yrho)/(-yrho))
+    grad <- yapp * log((1 + check.yrho(yrho))/(-yrho))
     return(grad)
 }
 
