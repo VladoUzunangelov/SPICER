@@ -527,7 +527,7 @@ spicer.default <- function(K, yapp, C, opt) {
 ## Evaluates the augmented dual proximal (in fact the negative of it since we ar eminimizing)
 funceval <- function(loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func) {
     val <- switch(loss,
-                  logit = logit.loss(yrho),
+                  logit = logit.loss(check.yrho(yrho)),
                   square = square.loss(yapp, rho))
     ## they use Proposition 1 (eqn 23) in SpicyMKL Tomioka Suzuki JMLR 2011 to convert Moreau envelope of the convex conjugate into moreau envelope of
     ## norm(alpha+gamma*rho)^2/2 - moreau envelope of regularization function the latter can then be evaluated at prox(norm(alpha+gamma*rho)) as in Boyd
@@ -581,7 +581,7 @@ hessian <- function(loss, yapp,  yrho, cgamma, cgammab, C, K, normj, wdot, pr, p
 dual.obj <- function(loss, yapp, rho, rhoNorm, reg.dual, C) {
 
     dual <- switch(loss, logit = {
-        dual <- -logit.loss(yapp * rho) - sum(reg.dual(rhoNorm, C))
+        dual <- -logit.loss(check.yrho(yapp * rho)) - sum(reg.dual(rhoNorm, C))
     }, square = {
         dual <- -square.loss(yapp, rho) - sum(reg.dual(rhoNorm, C))
     })
@@ -625,7 +625,6 @@ check.yrho <- function(yrho) {
 ## that negative sign of rho is accounted for in function calculation
 
 logit.loss <- function(yrho) {
-  yrho<-check.yrho(yrho)
     loss <- sum((1 + yrho) * log(1 + yrho) - yrho * log(-yrho))
     return(loss)
 }
@@ -633,7 +632,6 @@ logit.loss <- function(yrho) {
 ## different from table 1 in Tomioka 2009 - Dual Augmented Lagrangian again because of the substitution of rho for negative rho also this is technically
 ## -logit.grad, even with the variable substitution!!
 logit.grad <- function(yrho, yapp) {
-  yrho<-check.yrho(yrho)
     grad <- yapp * log((1 + yrho)/(-yrho))
     return(grad)
 }
