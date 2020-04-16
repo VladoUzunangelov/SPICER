@@ -28,9 +28,53 @@
 #' @export
 spicer <- function(K, yapp, C, opt = list()) {
 
+    if (is.factor(yapp) && length(levels(yapp)) > 2) {
+        res <- spicer.multiclass(K, yapp, C, opt)
+    } else {
+        res <- spicer.default(K, yapp, C, opt)
+    }
+
+    return(res)
+}
+####################################################
+spicer.multiclass <- function(K, yapp, C, opt = list()) {
+
+    opt$loss <- "logit"
+    lvls <- levels(yapp)
+
+    combos <- combn(lvls, 2)
+
+    res <- foreach(i = 1:ncol(combos)) %do% {
+        idx <- yapp %in% combos[, i]
+        spicer.default(K[idx, idx, , drop = FALSE],
+                       factor(yapp[idx], levels = combos[, i]), C, opt)
+
+    }
 
 
-  if (is.null(opt$regname))
+    cw <- rep(0, dim(K)[3])
+    names(cw) <- dimnames(K)[[3]]
+
+    for (i in 1:length(res)) {
+        cw[names(res[[i]]$sorted_kern_weight)] <- cw[names(res[[i]]$sorted_kern_weight)] + res[[i]]$sorted_kern_weight
+    }
+    cw <- cw[cw > 0]
+    cw <- sort(cw, decreasing = TRUE)/sum(cw)
+    ## set attribute of res to the overall kernel weights
+    res <- structure(res, sorted_kern_weight = cw)
+
+    class(res) <- c("spicer", class(res))
+
+    return(res)
+}
+#######################################################
+
+spicer.default <- function(K, yapp, C, opt=list()) {
+
+  if (is.null(opt$loss)) opt$loss <- if (length(unique(yapp)) == 2) "logit" else "square"
+
+
+   if (is.null(opt$regname))
     opt$regname <- "l1"
 
 
@@ -43,7 +87,7 @@ spicer <- function(K, yapp, C, opt = list()) {
     C = C[1]
   }
 
-  if (is.null(opt$loss)) opt$loss <- if (length(unique(yapp)) == 2) "logit" else "square"
+
   ## convert labels to -1,1
   if (opt$loss %in% c("logit")) {
     ## change a factor to a numeric vector
@@ -99,48 +143,6 @@ spicer <- function(K, yapp, C, opt = list()) {
   opt$C <- C
   opt$nkern <- dim(K)[3]
 
-    if (is.factor(yapp) && length(levels(yapp)) > 2) {
-        res <- spicer.multiclass(K, yapp, C, opt)
-    } else {
-        res <- spicer.default(K, yapp, C, opt)
-    }
-
-    return(res)
-}
-####################################################
-spicer.multiclass <- function(K, yapp, C, opt) {
-
-    opt$loss <- "logit"
-    lvls <- levels(yapp)
-
-    combos <- combn(lvls, 2)
-
-    res <- foreach(i = 1:ncol(combos)) %do% {
-        idx <- yapp %in% combos[, i]
-        spicer.default(K[idx, idx, , drop = FALSE],
-                       factor(yapp[idx], levels = combos[, i]), C, opt)
-
-    }
-
-
-    cw <- rep(0, dim(K)[3])
-    names(cw) <- dimnames(K)[[3]]
-
-    for (i in 1:length(res)) {
-        cw[names(res[[i]]$sorted_kern_weight)] <- cw[names(res[[i]]$sorted_kern_weight)] + res[[i]]$sorted_kern_weight
-    }
-    cw <- cw[cw > 0]
-    cw <- sort(cw, decreasing = TRUE)/sum(cw)
-    ## set attribute of res to the overall kernel weights
-    res <- structure(res, sorted_kern_weight = cw)
-
-    class(res) <- c("spicer", class(res))
-
-    return(res)
-}
-#######################################################
-
-spicer.default <- function(K, yapp, C, opt) {
 
     ## selection of regularization functions
     expand(get.reg.funcs(opt$regname))
