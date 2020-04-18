@@ -145,7 +145,7 @@ spicer.default <- function(K, yapp, C, opt=list()) {
 
 
     ## selection of regularization functions
-    expand(get.reg.funcs(opt$regname))
+    expand(get_reg_funcs(opt$regname))
 
     ## set up trajectory tracking and some defaults
     history <- data.frame(primalobj = double(), dualobj = double(), numActiv = integer(), dualityGap = double(), elapsedTime = double(), stringsAsFactors = FALSE)
@@ -197,12 +197,12 @@ spicer.default <- function(K, yapp, C, opt=list()) {
             sumrho <- sum(rho)
             yrho <- yapp * rho
 
-            fval <- funceval(opt$loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func)
+            fval <- funceval(opt$loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg_func)
 
             grad <- gradient(opt$loss, yapp, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset)
 
             switch(opt$optname, Newton = {
-                hess <- hessian(opt$loss, yapp, yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox.deriv, activeset)
+                hess <- hessian(opt$loss, yapp, yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox_deriv, activeset)
 
                 ## find descent direction
 
@@ -271,7 +271,7 @@ spicer.default <- function(K, yapp, C, opt=list()) {
 
             sumrho <- sum(rho)
             yrho <- yapp * rho
-            fval <- funceval(opt$loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func)
+            fval <- funceval(opt$loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg_func)
 
             ## compute step length in descent direction via Armijo's rule can be moved to a separate function, but calculation depends on too many arguments, some of
             ## which large - performance hit for slight increase in modularity
@@ -310,7 +310,7 @@ spicer.default <- function(K, yapp, C, opt=list()) {
                 normj[tmpActiveset] <- sqrt(pmax(0, old$normj[tmpActiveset]^2 + 2 * stepL * dirDotWDot[tmpActiveset] + (stepL^2) * dirNorm[tmpActiveset]))
                 pr <- prox(normj * cgamma, C, cgamma)
 
-                fval <- funceval(opt$loss, normj, yapp, rho, yapp * rho, sum(rho), cgamma, cgammab, cb, pr, C, reg.func)
+                fval <- funceval(opt$loss, normj, yapp, rho, yapp * rho, sum(rho), cgamma, cgammab, cb, pr, C, reg_func)
                 sumrho <- sum(rho)
                 yrho <- yapp * rho
                 activeset <- which(pr > 0)
@@ -380,9 +380,9 @@ spicer.default <- function(K, yapp, C, opt=list()) {
             primalArg <- primalArg + K[, , i] %*% krnlW[, i]
         }
 
-        primalVal <- primal.obj(opt$loss, yapp, primalArg, length(activeset), reg.func, krnlWNorm, C)
+        primalVal <- primal_obj(opt$loss, yapp, primalArg, length(activeset), reg_func, krnlWNorm, C)
 
-        dualVal <- dual.obj(opt$loss, yapp, rhoMod, rhoNorm, reg.dual, C)
+        dualVal <- dual_obj(opt$loss, yapp, rhoMod, rhoNorm, reg_dual, C)
 
         dualGap <- if (is.infinite(primalVal))
             Inf else abs(primalVal - dualVal)/abs(primalVal)
@@ -527,15 +527,15 @@ spicer.default <- function(K, yapp, C, opt=list()) {
 ## Spicer Helpers#############################
 
 ## Evaluates the augmented dual proximal (in fact the negative of it since we ar eminimizing)
-funceval <- function(loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg.func) {
+funceval <- function(loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, pr, C, reg_func) {
     val <- switch(loss,
-                  logit = logit.loss(yrho),
-                  square = square.loss(yapp, rho))
+                  logit = logit_loss(yrho),
+                  square = square_loss(yapp, rho))
     ## they use Proposition 1 (eqn 23) in SpicyMKL Tomioka Suzuki JMLR 2011 to convert Moreau envelope of the convex conjugate into moreau envelope of
     ## norm(alpha+gamma*rho)^2/2 - moreau envelope of regularization function the latter can then be evaluated at prox(norm(alpha+gamma*rho)) as in Boyd
     ## Promixal algorithms monograph, 3.1 , right before eqn 3.2
 
-    val <- val - (sum(reg.func(pr, C)) + sum(pr^2/(2 * cgamma)) - normj %*% pr)
+    val <- val - (sum(reg_func(pr, C)) + sum(pr^2/(2 * cgamma)) - normj %*% pr)
     val <- val + cgammab * sumrho^2/2 + cb * sumrho
 
     return(val)
@@ -545,8 +545,8 @@ funceval <- function(loss, normj, yapp, rho, yrho, sumrho, cgamma, cgammab, cb, 
 
 gradient <- function(loss, yapp, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot, normj, pr, activeset) {
     val <- switch(loss,
-                  logit = logit.grad(yrho, yapp),
-                  square = square.grad(rho, yapp))
+                  logit = logit_grad(yrho, yapp),
+                  square = square_grad(rho, yapp))
 
     for (i in activeset) {
         val <- val + wdot[, i] * (pr[i]/normj[i])
@@ -559,12 +559,12 @@ gradient <- function(loss, yapp, yrho, rho, sumrho, cgamma, cgammab, cb, C, wdot
 
 ## Evaluates Hessian on augmented dual proximal objective function
 
-hessian <- function(loss, yapp,  yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox.deriv, activeset) {
+hessian <- function(loss, yapp,  yrho, cgamma, cgammab, C, K, normj, wdot, pr, prox_deriv, activeset) {
     val <- switch(loss,
-                  logit = logit.hess(yrho),
-                  square = square.hess(length(yapp)))
+                  logit = logit_hess(yrho),
+                  square = square_hess(length(yapp)))
 
-    dpr <- prox.deriv(normj * cgamma, C, cgamma)
+    dpr <- prox_deriv(normj * cgamma, C, cgamma)
     w1 <- pr/normj
     w2 <- (cgamma * dpr * normj - pr)/(normj^3)
 
@@ -580,12 +580,12 @@ hessian <- function(loss, yapp,  yrho, cgamma, cgammab, C, K, normj, wdot, pr, p
 }
 
 
-dual.obj <- function(loss, yapp, rho, rhoNorm, reg.dual, C) {
+dual_obj <- function(loss, yapp, rho, rhoNorm, reg_dual, C) {
 
     dual <- switch(loss, logit = {
-        dual <- -logit.loss(yapp * rho) - sum(reg.dual(rhoNorm, C))
+        dual <- -logit_loss(yapp * rho) - sum(reg_dual(rhoNorm, C))
     }, square = {
-        dual <- -square.loss(yapp, rho) - sum(reg.dual(rhoNorm, C))
+        dual <- -square_loss(yapp, rho) - sum(reg_dual(rhoNorm, C))
     })
 
     return(dual)
@@ -594,13 +594,13 @@ dual.obj <- function(loss, yapp, rho, rhoNorm, reg.dual, C) {
 
 ## Primal Obj Funcitons########################### z here has the opposite sign to the MATLAB code (but the right one theoretically) - the opposite sign
 ## is compensated for by negating z in the argument pre-processing
-primal.obj <- function(loss, yapp, z, nactive, reg.func, krnlWNorm, C) {
+primal_obj <- function(loss, yapp, z, nactive, reg_func, krnlWNorm, C) {
     primal <- switch(loss,
                      logit = sum(log(1 + exp(-yapp * z))),
                      square = sum((yapp - z)^2) * 0.5)
 
     if (nactive > 0) {
-        primal <- primal + sum(reg.func(krnlWNorm, C))
+        primal <- primal + sum(reg_func(krnlWNorm, C))
     }
 
     return(primal)
@@ -608,7 +608,7 @@ primal.obj <- function(loss, yapp, z, nactive, reg.func, krnlWNorm, C) {
 
 ## for the logit implementation, yrho needs to stay which (0,1), so
 ##-yrho needs to stay within (-1,0) (all open intervals!!)
-check.yrho <- function(yrho) {
+check_yrho <- function(yrho) {
     ## this is to make sure yrho falls within the required constraint
     ##-1<-yrho<0,
     ## which is the negated actual constraint 0>yrho>1
@@ -626,45 +626,45 @@ check.yrho <- function(yrho) {
 ## aka dual/convex conjugate of logit loss see see table 1 in Tomioka 2009 - Dual Augmented Lagrangian also Suzuki 2011 Spicy MKL eqn(16) difference is
 ## that negative sign of rho is accounted for in function calculation
 
-logit.loss <- function(yrho) {
-  yrho<-check.yrho(yrho)
+logit_loss <- function(yrho) {
+  yrho<-check_yrho(yrho)
     loss <- sum((1 + yrho) * log(1 + yrho) - yrho * log(-yrho))
     return(loss)
 }
 
 ## different from table 1 in Tomioka 2009 - Dual Augmented Lagrangian again because of the substitution of rho for negative rho also this is technically
-## -logit.grad, even with the variable substitution!!
-logit.grad <- function(yrho, yapp) {
-  yrho<-check.yrho(yrho)
+## -logit_grad, even with the variable substitution!!
+logit_grad <- function(yrho, yapp) {
+  yrho<-check_yrho(yrho)
     grad <- yapp * log((1 + yrho)/(-yrho))
     return(grad)
 }
 
 ## remember, the logit uses binary {-1,1} y labels, so the y^2 term that should have been in the numerator disappears!!
-logit.hess <- function(yrho) {
+logit_hess <- function(yrho) {
     hess <- diag(1/(-yrho * (1 + yrho)))
     return(hess)
 }
 
 ## SVM Loss################################### Suzuki 2011 Spicy MKL eqn(17)
-svm.loss <- function(yrho) {
+svm_loss <- function(yrho) {
     loss <- sum(yrho)
     return(loss)
 }
 
 
 ## Square Loss################
-square.loss <- function(yapp, rho) {
+square_loss <- function(yapp, rho) {
     loss <- 0.5 * rho %*% rho + rho %*% yapp
     return(loss)
 }
 
-square.grad <- function(rho, yapp) {
+square_grad <- function(rho, yapp) {
     grad <- rho + yapp
     return(grad)
 }
 
-square.hess <- function(N) {
+square_hess <- function(N) {
     hess <- diag(nrow = N)
     return(hess)
 }
@@ -672,22 +672,22 @@ square.hess <- function(N) {
 ## regularization terms############################################ the proximal operators are vectorized
 
 ## regularization function factory######
-get.reg.funcs <- function(regname = c("l1", "elasticnet")) {
+get_reg_funcs <- function(regname = c("l1", "elasticnet")) {
     regname = match.arg(regname)
 
-    switch(regname, l1 = list(reg.func = l1.reg, reg.dual = l1.dual, prox = l1.prox, prox.deriv = l1.prox.deriv), elasticnet = list(reg.func = elas.reg,
-        reg.dual = elas.dual, prox = elas.prox, prox.deriv = elas.prox.deriv))
+    switch(regname, l1 = list(reg_func = l1_reg, reg_dual = l1_dual, prox = l1_prox, prox_deriv = l1_prox_deriv), elasticnet = list(reg_func = elas_reg,
+        reg_dual = elas_dual, prox = elas_prox, prox_deriv = elas_prox_deriv))
 
 }
 
 ## L1-norm#######################################
-l1.reg <- function(x, C) {
+l1_reg <- function(x, C) {
     reg <- C * abs(x)
     return(reg)
 }
 
 ## aka convex conjugate see Suzuki (2011) SpicyMKL -eqn (21)
-l1.dual <- function(x, C) {
+l1_dual <- function(x, C) {
     regDual <- rep(0, length(x))
     regDual[x > C] <- Inf
     return(regDual)
@@ -695,37 +695,37 @@ l1.dual <- function(x, C) {
 
 ## see table 2 in Tomioka 2009 - Dual Augmented Lagrangian can also be derived with Moreau decomposition and projection on the Linf-norm ball - see Boyd
 ## Proximal Algorithms monograph, section 6.5.1
-l1.prox <- function(x, C, eta) {
+l1_prox <- function(x, C, eta) {
     prox <- pmax(x - C * eta, 0)
     return(prox)
 }
 
 
 ## derivative of l1 proximal function
-l1.prox.deriv <- function(x, C, eta) {
+l1_prox_deriv <- function(x, C, eta) {
     proxDeriv <- as.numeric(x > C * eta)
     return(proxDeriv)
 }
 
 ## Elastic Net Regularization##################################
-elas.reg <- function(x, C) {
+elas_reg <- function(x, C) {
     reg <- C[1] * abs(x) + (C[2]/2) * (x^2)
     return(reg)
 }
 
 ## aka convex conjugate see Suzuki(2011) -SpicyMKL eqn(46)
-elas.dual <- function(x, C) {
+elas_dual <- function(x, C) {
     regDual <- (0.5/C[2]) * (x^2 - 2 * C[1] * abs(x) + C[1]^2) * (x > C[1])
     return(regDual)
 }
 
 ## see see Boyd Proximal Algorithms monograph, section 6.5.3
-elas.prox <- function(x, C, eta) {
+elas_prox <- function(x, C, eta) {
     prox <- pmax(x - C[1] * eta, 0)/(1 + C[2] * eta)
     return(prox)
 }
 
-elas.prox.deriv <- function(x, C, eta) {
+elas_prox_deriv <- function(x, C, eta) {
     proxDeriv <- (1/(1 + C[2] * eta)) * (x > C[1] * eta)
     return(proxDeriv)
 }
