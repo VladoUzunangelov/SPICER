@@ -7,7 +7,7 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-#' expand a list to its component objects - the list entities now become individual entries in the (current) R environment.
+#' expand a list to its component objects - the list entities now become individual entries in the R environment from which the function is called.
 #' @param vals - a named list or vector of values/objects we want to expand in individual objects in the current environment
 #' @param nms - optional list of names for the new object in the current environment. If the names of the output variables are not supplied, names of vals argument are used instead
 #' @export
