@@ -7,8 +7,10 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-## expand a list to its component objects - the list entities now become individual entries in the (current) R environment if the names of the output
-## variables are not supplied, use names of expanded list/vector variables values is a list or a vector of variables we want to expand
+#' expand a list to its component objects - the list entities now become individual entries in the (current) R environment.
+#' @param vals - a named list or vector of values/objects we want to expand in individual objects in the current environment
+#' @param nms - optional list of names for the new object in the current environment. If the names of the output variables are not supplied, names of vals argument are used instead
+#' @export
 expand <- function(vals, nms = NULL) {
     if (is.null(nms)) {
         nms = names(vals)
@@ -18,10 +20,4 @@ expand <- function(vals, nms = NULL) {
     invisible()
 }
 
-## taken from Hadley Wickham's scales package rescale continuous vectors to a specified interval
-rescale <- function(x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
-    if (zero_range(from) || zero_range(to))
-        return(rep(mean(to), length(x)))
-    (x - from[1])/diff(from) * diff(to) + to[1]
-}
 
