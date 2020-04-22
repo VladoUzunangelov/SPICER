@@ -1,10 +1,10 @@
 Package: SPICER
 Type: Package
-Title: An R implementation of SpicyMKL, extended for multiclass problems
+Title: SPICER: SpicyMKL in R
 Version: 0.1.0
-Author: Vlado Uzunangelov
-Maintainer: Vlado Uzunangelov <uzunangelov@gmail.com>
-Description: This is a port to R of Tomioka and Suzuki's SpicyMKL.SpicyMKL solves  both binary classification (hinge & logitstic losses) and regression (squared error loss) problems.Spicer solves binary classification (logistic only), regression (squared error loss) and multiclass problems (logistic loss). The latter is done by expanding the binary SpicyMKL solver via one-versus-one class pairs training approach. In addition, Spicer outputs class or probability predictions for binary/multiclass classification tasks.
+Author: Vladislav (Vlado) Uzunangelov
+Maintainer: Vladislav Uzunangelov <uzunangelov@gmail.com>
+Description: This is a port of Tomioka and Suzuki's SpicyMKL, expanded for multiclass problems.SpicyMKL solves  both binary classification (hinge & logitstic losses) and regression (squared error loss) problems.Spicer solves binary classification (logistic only), regression (squared error loss) and multiclass problems (logistic loss). The latter is done by expanding the binary SpicyMKL solver via one-versus-one class pairs training approach. In addition, Spicer outputs class or probability predictions for binary/multiclass classification tasks.
 Citation: 1.Suzuki,Tomioka.SpicyMKL: a fast algorithm for Multiple Kernel Learning with thousands of kernels. Mach Learn (2011) 85:77–108  2. https: //github.com/VladoUzunangelov/SPICER
 License: GNU GPL v3.0
 Encoding: UTF-8
