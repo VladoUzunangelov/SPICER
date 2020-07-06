@@ -2,9 +2,9 @@
 
 
 #' @param K : N x N x M array. the (i,j,m)-element contains the (i,j)-element of the m-th kernel gram matrix.
-#' @param yapp :  vector of length N with sample labels.  It should be a factor for binary/multiclass classification!
+#' @param yapp :  vector of length N with sample labels.  It should be a factor for binary/multiclass classification
 #' @param C : regularization parameter . Large values of C induce strong regularization. For L1 regularization C is a scalar: or elasticnet, C is a vector of length 2: C(1)|x| + C(2)x^2/2
-#' @param opt : list of options which control the behavior of Spicer:
+#' @param opt : list of options which control the behavior of SPICER:
 #' loss: type of loss function:  'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,
 #'  'square' (square loss, 0.5*(y - f(x))^2) for regression
 #'  regname: type of regularization: 'l1' (default), 'elasticnet'
@@ -16,15 +16,16 @@
 #'   tolInner: tollerance of stopping criteria of inner loop. (default tolOuter/1000) -
 #'   calpha: increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)
 #'   display: 1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.
-#'   @return A spicer model with the following components:
+#'   @return A SPICER model with the following components:
 #'   comb_alpha : N x 1 coefficient vector.
 #'   kern_weight : 1 x M kernel weight vector, scaled to sum to 1
 #'   bias : bias term
 #'   activeset : indices of kernels that are active ({m : kern_weight[m] is not zero}).
 #'   sorted_kern_weight: vector of non-zero kernel weights sorted by magnitude, scaled to sum to 1.
-#'   opt : list of Spicer options used in run
+#'   opt : list of SPICER options used in run
 #'   history : contains history of primal objective, dual objective, number of active kernels, and duality gap.
-#'   Citation: Suzuki,Tomioka.SpicyMKL: a fast algorithm for Multiple Kernel Learning with thousands of kernels. Mach Learn (2011) 85:77–108 (c) Vlado Uzunangelov
+#'   Citation: Suzuki,Tomioka.SpicyMKL: a fast algorithm for Multiple Kernel Learning with thousands of kernels. Mach Learn (2011) 85:77–108
+#'   (c) Vlado Uzunangelov
 #' @export
 spicer <- function(K, yapp, C, opt = list()) {
 
