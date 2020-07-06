@@ -1,0 +1,4 @@
+#####Version 0.1####################
+-converts the R-script version of SPICYMKL used in DREAM9 challenge into an R package (PACKAGE)
+-SPICER extends SPICYMKL by including multi-class learning and the option for probability output in classification settings
+-SPICER does not have the hinge loss for classification functionality of the original SPICYMKL MATLAB code
