@@ -34,8 +34,8 @@ A SPICER model with the following components:
 * *history* : contains history of primal objective, dual objective, number of active kernels, and duality gap.
 
 **Prediction**\
-*Inputs*\
-* *model* SPICER model\
+*Inputs*
+* *model* SPICER model
 * *kTest* a list of test kernels of dimensions nTrain, nTest, length(model\$sorted_kern_weight) (you can pass extra kernels so long as ones referenced in model\$sorted_kern_weight are included). In the case of multiclass prediction, the third dimension of kTest should include all possible kernels for each pairwise classification task.\
 #* *type* - applicable for classification (binary & multiclass) only - "response" returns the predicted class labels, while "probability" returns the class probability (for classification, positive class is the second class label in model\$opt\$classes)\
 *Output* \
@@ -43,7 +43,7 @@ A prediction vector of length nTest computed by\
 f(x) = \sum{model$sorted_kern_weigth[i]*KTest[,,i]}*model$comb_alpha + model$beta\
 If prediction task is 'regression', output is continuous valued predictions\
 If prediction task is 'classification' and type is 'response' - output is predicted labels.\
-If prediction task is 'classification' and type is 'probability' - output is probabilities of positive class (model\$opt\$classes[2])\
+If prediction task is 'classification' and type is 'probability' - output is probabilities of positive class (model\$opt\$classes[2])
 
 **Citations** 
 1. V. J. Uzunangelov.*Prediction of cancer phenotypes through the integration of multi-omicdata and prior information.*  PhD thesis, UC Santa Cruz, 2019.
