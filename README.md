@@ -1,10 +1,10 @@
 This is an R port of Tomioka and Suzuki's SpicyMKL.  
 SpicyMKL solves  both binary classification (hinge & logitstic losses) and regression (squared error loss) problems.  
-Spicer solves binary classification (logistic only), regression (squared error loss)
+SPICER solves binary classification (logistic only), regression (squared error loss)
 and multiclass problems (logistic loss).  
 The latter is done by expanding the binary SpicyMKL solver via one-versus-one
 class pairs training approach.  
-In addition, Spicer outputs class or probability predictions for binary/multiclass classification tasks.  
+In addition, SPICER outputs class or probability predictions for binary/multiclass classification tasks.  
 
 **Training**\
 *Inputs*\
@@ -16,8 +16,8 @@ In addition, Spicer outputs class or probability predictions for binary/multicla
 * regname: type of regularization: 'l1' (default), 'elasticnet'
 * outerMaxIter: maximum number of iteration of outer loop. (default 300)
 * innerMaxIter: maximum number of iteration of inner loop. (default 500) -
-* stopdualitygap: TRUE/FALSE. If TRUE, Spicer employs duality gap for stopping criterion of outer loop. Default TRUE.  -
-* stopIneqViolation: TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE
+* stopdualitygap: TRUE/FALSE. If TRUE, SPICER employs duality gap for stopping criterion of outer loop. Default TRUE.  -
+* stopIneqViolation: TRUE/FALSE. If TRUE, SPICER employs violation of inequality for stopping criterion of outer loop. Default FALSE
 * tolOuter:tollerance of stopping criteria of outer loop. (default 0.001)
 * tolInner: tollerance of stopping criteria of inner loop. (default tolOuter/1000) -
 * calpha: increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)
