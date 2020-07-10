@@ -6,7 +6,7 @@
 #' $$f(x) = \sum{model$sorted_kern_weigth[i]*KTest[,,i]}*model\$comb_alpha + model$beta$$
 #' If prediction task is 'regression', output is continuous valued predictions.
 #' If prediction task is 'classification' and type is 'response' - output are predicted labels.
-#' If prediction task is 'classification' and type is 'probability' - output is probabilities of classes)
+#' If prediction task is 'classification' and type is 'probability' - output is probabilities of classes.
 #' @export
 predict.spicer <- function(model, kTest, type = "probability") {
 

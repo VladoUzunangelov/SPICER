@@ -40,7 +40,7 @@ A prediction vector of length nTest computed by\
 f(x) = \sum{model$sorted_kern_weigth[i]*KTest[,,i]}*model$comb_alpha + model$beta\
 If prediction task is 'regression', output is continuous valued predictions\
 If prediction task is 'classification' and type is 'response' - output is predicted labels.\
-If prediction task is 'classification' and type is 'probability' - output is probabilities of classes)
+If prediction task is 'classification' and type is 'probability' - output is probabilities of classes.
 
 **Citations** 
 1. V. J. Uzunangelov.*Prediction of cancer phenotypes through the integration of multi-omicdata and prior information.*  PhD thesis, UC Santa Cruz, 2019.
