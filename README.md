@@ -1,10 +1,6 @@
 This is an R port of Tomioka and Suzuki's SpicyMKL.  
-SpicyMKL solves  both binary classification (hinge & logitstic losses) and regression (squared error loss) problems.  
-SPICER solves binary classification (logistic only), regression (squared error loss)
-and multiclass problems (logistic loss).  
-The latter is done by expanding the binary SpicyMKL solver via one-versus-one
-class pairs training approach.  
-In addition, SPICER outputs class or probability predictions for binary/multiclass classification tasks.  
+SpicyMKL solves  both binary classification (hinge & logitstic losses) and regression (squared error loss) problems. SPICER solves binary classification (logistic only), regression (squared error loss) and multiclass problems (logistic loss). The latter is done by expanding the binary SpicyMKL solver via one-versus-one
+class pairs training approach. In addition, SPICER outputs class or probability predictions for binary/multiclass classification tasks.  
 
 **Training**\
 *Inputs*\
@@ -15,11 +11,11 @@ In addition, SPICER outputs class or probability predictions for binary/multicla
 * loss: type of loss function:  'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,'square' (square loss, 0.5*(y - f(x))^2) for regression
 * regname: type of regularization: 'l1' (default), 'elasticnet'
 * outerMaxIter: maximum number of iteration of outer loop. (default 300)
-* innerMaxIter: maximum number of iteration of inner loop. (default 500) -
+* innerMaxIter: maximum number of iteration of inner loop. (default 500)
 * stopdualitygap: TRUE/FALSE. If TRUE, SPICER employs duality gap for stopping criterion of outer loop. Default TRUE.  -
 * stopIneqViolation: TRUE/FALSE. If TRUE, SPICER employs violation of inequality for stopping criterion of outer loop. Default FALSE
 * tolOuter:tollerance of stopping criteria of outer loop. (default 0.001)
-* tolInner: tollerance of stopping criteria of inner loop. (default tolOuter/1000) -
+* tolInner: tollerance of stopping criteria of inner loop. (default tolOuter/1000)
 * calpha: increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)
 * display: 1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.
 
@@ -37,13 +33,14 @@ A SPICER model with the following components:
 *Inputs*
 * *model* SPICER model
 * *kTest* a list of test kernels of dimensions nTrain, nTest, length(model\$sorted_kern_weight) (you can pass extra kernels so long as ones referenced in model\$sorted_kern_weight are included). In the case of multiclass prediction, the third dimension of kTest should include all possible kernels for each pairwise classification task.\
-#* *type* - applicable for classification (binary & multiclass) only - "response" returns the predicted class labels, while "probability" returns the class probability (for classification, positive class is the second class label in model\$opt\$classes)\
+* *type* - applicable for classification (binary & multiclass) only - "response" returns the predicted class labels, while "probability" returns the class probability (for classification, positive class is the second class label in model\$opt\$classes)\
+
 *Output* \
 A prediction vector of length nTest computed by\
 f(x) = \sum{model$sorted_kern_weigth[i]*KTest[,,i]}*model$comb_alpha + model$beta\
 If prediction task is 'regression', output is continuous valued predictions\
 If prediction task is 'classification' and type is 'response' - output is predicted labels.\
-If prediction task is 'classification' and type is 'probability' - output is probabilities of positive class (model\$opt\$classes[2])
+If prediction task is 'classification' and type is 'probability' - output is probabilities of classes)
 
 **Citations** 
 1. V. J. Uzunangelov.*Prediction of cancer phenotypes through the integration of multi-omicdata and prior information.*  PhD thesis, UC Santa Cruz, 2019.
