@@ -52,4 +52,4 @@ If prediction task is 'classification' and type is 'probability' - output is pro
 
 
 (c) Vlado Uzunangelov 2016  
-uzunangelov@soe.ucsc.edu
+uzunangelov@gmail.com
