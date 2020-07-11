@@ -1,9 +1,9 @@
 #' Port of Tomioka and Suzuki's SpicyMKL to R, expanded for multiclass and probability outputs.
 #' @title spicer
-#' @param K : N x N x M array. the (i,j,m)-element contains the (i,j)-element of the m-th kernel gram matrix.
-#' @param yapp :  vector of length N with sample labels.  It should be a factor for binary/multiclass classification
-#' @param C : regularization parameter . Large values of C induce strong regularization. For L1 regularization C is a scalar; for elasticnet, C is a vector of length 2: C(1)|x| + C(2)x^2/2
-#' @param opt : list of options which control spicer behavior:
+#' @param K N x N x M array. the (i,j,m)-element contains the (i,j)-element of the m-th kernel gram matrix.
+#' @param yapp vector of length N with sample labels.  It should be a factor for binary/multiclass classification
+#' @param C regularization parameter . Large values of C induce strong regularization. For L1 regularization C is a scalar; for elasticnet, C is a vector of length 2: C(1)|x| + C(2)x^2/2
+#' @param opt list of options which control spicer behavior:
 #' \describe{
 #'  \item{loss}{type of loss function:'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,
 #'  'square' (square loss, 0.5*(y - f(x))^2) for regression}
@@ -14,7 +14,7 @@
 #'  \item{stopIneqViolation}{TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE.}
 #'   \item{tolOuter}{tollerance of stopping criteria of outer loop. (default 0.001)}
 #'   \item{tolInner}{tollerance of stopping criteria of inner loop. (default tolOuter/1000)}
-#'   \item{calpha}{increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)
+#'   \item{calpha}{increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)}
 #'   \item{display}{1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.}
 #'   }
 #' @return A SPICER model with the following components:

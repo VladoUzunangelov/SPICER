@@ -17,9 +17,9 @@
 Output is a prediction vector of length nTest computed by
 f(x)=sum\{model$sorted_kern_weigth[i]*KTest[,,i]\}*model$comb_alpha + model$beta
 
-If prediction task is 'regression', output is continuous valued predictions.
-If prediction task is 'classification' and type is 'response' - output are predicted labels.
-If prediction task is 'classification' and type is 'probability' - output is probabilities of classes.
+If prediction task is 'regression', output is continuous valued predictions. \cr
+If prediction task is 'classification' and type is 'response' - output is predicted labels. \cr
+If prediction task is 'classification' and type is 'probability' - output is probabilities of classes. \cr
 }
 \description{
 Computes predictions from Spicer model.

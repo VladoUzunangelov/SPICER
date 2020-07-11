@@ -7,9 +7,9 @@
 expand(vals, nms = NULL)
 }
 \arguments{
-\item{vals}{- a named list or vector of values/objects we want to expand in individual objects in the current environment}
+\item{vals}{a named list or vector of values/objects we want to expand in individual objects in the current environment}
 
-\item{nms}{- optional list of names for the new object in the current environment. If the names of the output variables are not supplied, names of vals argument are used instead}
+\item{nms}{optional list of names for the new object in the current environment. If the names of the output variables are not supplied, names of vals argument are used instead}
 }
 \description{
 expand a list to its component objects - the list entities now become individual entries in the R environment from which the function is called.
