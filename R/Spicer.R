@@ -1,29 +1,32 @@
 #' Port of Tomioka and Suzuki's SpicyMKL to R, expanded for multiclass and probability outputs.
-
-
+#' @title spicer
 #' @param K : N x N x M array. the (i,j,m)-element contains the (i,j)-element of the m-th kernel gram matrix.
 #' @param yapp :  vector of length N with sample labels.  It should be a factor for binary/multiclass classification
-#' @param C : regularization parameter . Large values of C induce strong regularization. For L1 regularization C is a scalar: or elasticnet, C is a vector of length 2: C(1)|x| + C(2)x^2/2
+#' @param C : regularization parameter . Large values of C induce strong regularization. For L1 regularization C is a scalar; for elasticnet, C is a vector of length 2: C(1)|x| + C(2)x^2/2
 #' @param opt : list of options which control spicer behavior:
-#'  \item{loss} {type of loss function:  'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,
+#' \describe{
+#'  \item{loss}{type of loss function:'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,
 #'  'square' (square loss, 0.5*(y - f(x))^2) for regression}
-#'  \item{regname} {type of regularization: 'l1' (default), 'elasticnet'}
-#'  \item{outerMaxIter} {maximum number of iteration of outer loop. (default 300)}
-#'  \item{innerMaxIter} {maximum number of iteration of inner loop. (default 500)}
-#'  \item{stopdualitygap: TRUE/FALSE. If TRUE, Spicer employs duality gap for stopping criterion of outer loop. Default TRUE.}
-#'  \item{stopIneqViolation} {TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE.}
-#'   \item{tolOuter} {tollerance of stopping criteria of outer loop. (default 0.001)}
-#'   \item{tolInner} {tollerance of stopping criteria of inner loop. (default tolOuter/1000)}
-#'   \item{calpha} {increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)
-#'   display: 1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.}
-#'   @return A SPICER model with the following components:
-#'   \item{comb_alpha} {N x 1 coefficient vector.}
-#'   \item{kern_weight} {1 x M kernel weight vector, scaled to sum to 1}
-#'   \item{bias}  {bias term}
-#'   \item{activeset} {indices of kernels that are active ({m : kern_weight[m] is not zero}).}
-#'   \item{sorted_kern_weight} {vector of non-zero kernel weights sorted by magnitude, scaled to sum to 1.}
-#'   \item{opt} {list of SPICER options used in run.}
-#'   \item{history} {contains history of primal objective, dual objective, number of active kernels, and duality gap.}
+#'  \item{regname}{type of regularization: 'l1' (default), 'elasticnet'}
+#'  \item{outerMaxIter}{maximum number of iteration of outer loop. (default 300)}
+#'  \item{innerMaxIter}{maximum number of iteration of inner loop. (default 500)}
+#'  \item{stopdualitygap}{TRUE/FALSE. If TRUE, Spicer employs duality gap for stopping criterion of outer loop. Default TRUE.}
+#'  \item{stopIneqViolation}{TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE.}
+#'   \item{tolOuter}{tollerance of stopping criteria of outer loop. (default 0.001)}
+#'   \item{tolInner}{tollerance of stopping criteria of inner loop. (default tolOuter/1000)}
+#'   \item{calpha}{increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)
+#'   \item{display}{1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.}
+#'   }
+#' @return A SPICER model with the following components:
+#'   \describe{
+#'   \item{comb_alpha}{N x 1 coefficient vector.}
+#'   \item{kern_weight}{1 x M kernel weight vector, scaled to sum to 1}
+#'   \item{bias}{bias term}
+#'   \item{activeset}{indices of kernels that are active ({m : kern_weight[m] is not zero}).}
+#'   \item{sorted_kern_weight}{vector of non-zero kernel weights sorted by magnitude, scaled to sum to 1.}
+#'   \item{opt}{list of SPICER options used in run.}
+#'   \item{history}{contains history of primal objective, dual objective, number of active kernels, and duality gap.}
+#'   }
 #'   @references
 #'   \itemize{
 #'   \item  V. J. Uzunangelov.Prediction of cancer phenotypes through the integration of multi-omicdata and prior information.  PhD thesis, UC Santa Cruz, 2019

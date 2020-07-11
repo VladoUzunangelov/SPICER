@@ -1,11 +1,13 @@
 #' Computes predictions from Spicer model.
+#' @title predict.spicer
 #' @param model SPICER model
 #' @param kTest a list of test kernels of dimensions nTrain, nTest, length(model$sorted_kern_weight) (can pass extra kernels so long as ones referenced in model$sorted_kern_weight are included). In the case of multiclass prediction, the third dimension of kTest should include all possible kernels for each pairwise classification task.
-#' @param type - applicable for classification (binary & multiclass) only - "response" returns the predicted class labels, while "probability" returns the class probability (for classification, positive class is the second class label in model$opt$classes)
+#' @param type applicable for classification (binary & multiclass) only - "response" returns the predicted class labels, while "probability" returns the class probability (for classification, positive class is the second class label in model$opt$classes)
 #' @return Output is a prediction vector of length nTest computed by
-#' $$f(x) = \sum{model$sorted_kern_weigth[i]*KTest[,,i]}*model\$comb_alpha + model$beta$$
+#' f(x)=sum\{model$sorted_kern_weigth[i]*KTest[,,i]\}*model$comb_alpha + model$beta
+#'
 #' If prediction task is 'regression', output is continuous valued predictions.
-#' If prediction task is 'classification' and type is 'response' - output are predicted labels.
+#' If prediction task is 'classification' and type is 'response' - output is predicted labels.
 #' If prediction task is 'classification' and type is 'probability' - output is probabilities of classes.
 #' @export
 predict.spicer <- function(model, kTest, type = "probability") {
