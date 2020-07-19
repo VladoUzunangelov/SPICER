@@ -8,13 +8,17 @@
 #'  \item{loss}{type of loss function:'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,
 #'  'square' (square loss, 0.5*(y - f(x))^2) for regression}
 #'  \item{regname}{type of regularization: 'l1' (default), 'elasticnet'}
-#'  \item{outerMaxIter}{maximum number of iteration of outer loop. (default 300)}
-#'  \item{innerMaxIter}{maximum number of iteration of inner loop. (default 500)}
-#'  \item{stopdualitygap}{TRUE/FALSE. If TRUE, Spicer employs duality gap for stopping criterion of outer loop. Default TRUE.}
-#'  \item{stopIneqViolation}{TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE.}
-#'   \item{tolOuter}{tollerance of stopping criteria of outer loop. (default 0.001)}
-#'   \item{tolInner}{tollerance of stopping criteria of inner loop. (default tolOuter/1000)}
+#'  \item{optname}{optimization solver for dual variable (rho) inner minimization: 'Newton' (default), 'BFGS'}
+#'  \item{stop_duality_gap}{TRUE/FALSE. If TRUE, Spicer employs duality gap for stopping criterion of outer loop. Default TRUE.}
+#'  \item{stop_ineq_violation}{TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE.}
+#'  \item{outer_maxiter}{maximum number of iterations of outer loop. (default 300)}
+#'  \item{inner_maxiter}{maximum number of iterations of inner loop. (default 500)}
+#'  \item{tol_outer}{tolerance of stopping criteria of outer loop. (default 0.001)}
+#'  \item{tol_inner}{tolerance of stopping criteria of inner loop. (default tol_outer/1000)}
+#'  \item{miniter}{minimum number of iterations of outer loop. (default 30)}
+#'  \item{tol_miniter}{minimum relative improvement required for each outer iteration after miniter. (default 0.001)}
 #'   \item{calpha}{increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)}
+#'   \item{incl_subw}{TRUE/FALSE. If TRUE, Spicer includes the full NxM matrix of alpha coefficients. Default FALSE.}
 #'   \item{display}{1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.}
 #'   }
 #' @return A SPICER model with the following components:
@@ -26,10 +30,11 @@
 #'   \item{sorted_kern_weight}{vector of non-zero kernel weights sorted by magnitude, scaled to sum to 1.}
 #'   \item{opt}{list of SPICER options used in run.}
 #'   \item{history}{contains history of primal objective, dual objective, number of active kernels, and duality gap.}
+#'   \item{kern_alpha}{If incl_subw is TRUE, the NxM matrix of alpha coefficients.}
 #'   }
-#'   @references
+#' @references
 #'   \itemize{
-#'   \item  V. J. Uzunangelov.Prediction of cancer phenotypes through the integration of multi-omicdata and prior information.  PhD thesis, UC Santa Cruz, 2019
+#'   \item  V. Uzunangelov, C. K. Wong, and J. Stuart. Highly Accurate Cancer Phenotype Prediction with AKLIMATE, a Stacked Kernel Learner Integrating Multimodal Genomic Data and Pathway Knowledge. bioRxiv, July 2020.
 #'   \item Suzuki,Tomioka.SpicyMKL: a fast algorithm for Multiple Kernel Learning with thousands of kernels. Mach Learn (2011) 85:77–108
 #'   }
 #' @export
@@ -114,38 +119,38 @@ spicer.default <- function(K, yapp, C, opt=list()) {
   }
 
 
-  if (is.null(opt$tolOuter))
-    opt$tolOuter <- 0.001
+  if (is.null(opt$tol_outer))
+    opt$tol_outer <- 0.001
 
-  if (is.null(opt$tolInner))
-    opt$tolInner <- opt$tolOuter/1000
+  if (is.null(opt$tol_inner))
+    opt$tol_inner <- opt$tol_outer/1000
 
-  if (is.null(opt$outerMaxIter))
-    opt$outerMaxIter <- 300
+  if (is.null(opt$outer_maxiter))
+    opt$outer_maxiter <- 300
 
-  if (is.null(opt$innerMaxIter))
-    opt$innerMaxIter <- 500
+  if (is.null(opt$inner_maxiter))
+    opt$inner_maxiter <- 500
 
   if (is.null(opt$calpha))
     opt$calpha <- 10
 
-  if (is.null(opt$stopIneqViolation))
-    opt$stopIneqViolation <- FALSE
+  if (is.null(opt$stop_ineq_violation))
+    opt$stop_ineq_violation <- FALSE
 
-  if (is.null(opt$stopDualityGap))
-    opt$stopDualityGap <- TRUE
+  if (is.null(opt$stop_duality_gap))
+    opt$stop_duality_gap <- TRUE
 
-  if (is.null(opt$minIter))
-    opt$minIter <- 30
+  if (is.null(opt$miniter))
+    opt$miniter <- 30
 
-  if (is.null(opt$tolMinIter))
-    opt$tolMinIter <- 0.001
+  if (is.null(opt$tol_miniter))
+    opt$tol_miniter <- 0.001
 
   if (is.null(opt$display))
     opt$display <- 2
 
-  if (is.null(opt$includeSubW))
-    opt$includeSubW <- FALSE
+  if (is.null(opt$incl_subw))
+    opt$incl_subw <- FALSE
 
   opt$C <- C
   opt$nkern <- dim(K)[3]
@@ -198,9 +203,9 @@ spicer.default <- function(K, yapp, C, opt=list()) {
     activeset <- which(pr > 0)
 
     ## outer loop
-    for (l in 1:opt$outerMaxIter) {
+    for (l in 1:opt$outer_maxiter) {
         ## inner loop
-        for (step in 1:opt$innerMaxIter) {
+        for (step in 1:opt$inner_maxiter) {
             sumrho <- sum(rho)
             yrho <- yapp * rho
 
@@ -288,8 +293,7 @@ spicer.default <- function(K, yapp, C, opt=list()) {
 
             if (length(actdif) > 0) {
                 old$krnlWPrIn[, actdif] <- matrix(old$rho, length(old$rho), length(actdif)) + krnlWMod[, actdif]
-                ## need to update portions of old$wdot and old$normj there might be a more efficient method to do it not even sure if these updates are necessary!! - to
-                ## be confirmed
+                ## need to update portions of old$wdot and old$normj there might be a more efficient method to do it
                 tmp1 <- kernel_norm_cpp(K, old$krnlWPrIn, actdif)
                 old$wdot[, actdif] <- tmp1$wdot
                 old$normj[actdif] <- tmp1$normj
@@ -344,12 +348,12 @@ spicer.default <- function(K, yapp, C, opt=list()) {
                 write(paste0("inner iter: ", step, " fval: ", fval, " step length: ", stepL), stderr())
             }
 
-            if (sqrt((old$rho - rho) %*% (old$rho - rho))/sqrt(old$rho %*% old$rho) <= opt$tolInner) {
+            if (sqrt((old$rho - rho) %*% (old$rho - rho))/sqrt(old$rho %*% old$rho) <= opt$tol_inner) {
                 break
             }
 
-            if (step == opt$innerMaxIter) {
-                warning(paste0("Inner optimization did not converge to an optimal solution for rho. Increase iterations to more than ", opt$innerMaxIter),
+            if (step == opt$inner_maxiter) {
+                warning(paste0("Inner optimization did not converge to an optimal solution for rho. Increase iterations to more than ", opt$inner_maxiter),
                   immediate. = TRUE)
                 return(list(comb_alpha = numeric(), kern_weight = numeric(), sorted_kern_weight = numeric(), bias = numeric(), activeset = numeric(), history = history,
                   opt = opt))
@@ -406,13 +410,13 @@ spicer.default <- function(K, yapp, C, opt=list()) {
         }
 
         ## Duality Gap stopping criterion#######################
-        if (dualGap < opt$tolOuter && opt$stopDualityGap) {
+        if (dualGap < opt$tol_outer && opt$stop_duality_gap) {
             break
         }
         ## end Duality Gap stopping ###########################
-        if (opt$stopDualityGap && nrow(history) > opt$minIter && (history[step - opt$minIter, "dualityGap"] - dualGap)/history[step - opt$minIter, "dualityGap"] <
-            opt$tolMinIter) {
-            warning("The duality gap has been closing very slowly indicating slow convergence.You should examine your kernels for multicollinearity and or change regularization parameters.Alternatively you can increase minIter or decrease tolMinIter.",
+        if (opt$stop_duality_gap && nrow(history) > opt$miniter && (history[step - opt$miniter, "dualityGap"] - dualGap)/history[step - opt$miniter, "dualityGap"] <
+            opt$tol_miniter) {
+            warning("The duality gap has been closing very slowly indicating slow convergence.You should examine your kernels for multicollinearity and or change regularization parameters.Alternatively you can increase miniter or decrease tol_miniter.",
                 immediate. = TRUE)
             return(list(comb_alpha = numeric(), kern_weight = numeric(), sorted_kern_weight = numeric(), bias = numeric(), activeset = numeric(), history = history,
                 opt = opt))
@@ -445,7 +449,7 @@ spicer.default <- function(K, yapp, C, opt=list()) {
         largeRes <- which(hresid > cbeta * ck)
         maxgap <- max(max(abs(hresid)), maxgap)
 
-        if (opt$display >= 2 && opt$stopIneqViolation) {
+        if (opt$display >= 2 && opt$stop_ineq_violation) {
             write(paste0("outer iter: ", l, " maxgap: ", maxgap, " ck: ", ck), stderr())
         }
 
@@ -453,7 +457,7 @@ spicer.default <- function(K, yapp, C, opt=list()) {
             ck <- maxgap
         }
 
-        if (ck < opt$tolOuter && opt$stopIneqViolation) {
+        if (ck < opt$tol_outer && opt$stop_ineq_violation) {
             break
         }
 
@@ -485,9 +489,9 @@ spicer.default <- function(K, yapp, C, opt=list()) {
         pr <- prox(normj * cgamma, C, cgamma)
         activeset <- which(pr > 0)
 
-        ## make sure user knows if algorithm exceeded outerMaxIter
-        if (step == opt$outerMaxIter) {
-            warning(paste0("Outer optimization did not converge to an optimal solution for alpha and b. Increase iterations to more than ", opt$outerMaxIter),
+        ## make sure user knows if algorithm exceeded outer_maxiter
+        if (step == opt$outer_maxiter) {
+            warning(paste0("Outer optimization did not converge to an optimal solution for alpha and b. Increase iterations to more than ", opt$outer_maxiter),
                 immediate. = TRUE)
             return(list(comb_alpha = numeric(), kern_weight = numeric(), sorted_kern_weight = numeric(), bias = numeric(), activeset = numeric(), history = history,
                 opt = opt))
@@ -523,7 +527,7 @@ spicer.default <- function(K, yapp, C, opt=list()) {
         history = history, opt = opt)
     class(res) <- c("spicer", class(res))
 
-    if (opt$includeSubW)
+    if (opt$incl_subw)
         res$kern_alpha <- krnlW
 
     return(res)

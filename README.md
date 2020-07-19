@@ -10,13 +10,17 @@ class pairs training approach. In addition, SPICER outputs class or probability 
 *opt* : list of options which control the behavior of SPICER:
 * loss: type of loss function:  'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,'square' (square loss, 0.5*(y - f(x))^2) for regression
 * regname: type of regularization: 'l1' (default), 'elasticnet'
-* outerMaxIter: maximum number of iteration of outer loop. (default 300)
-* innerMaxIter: maximum number of iteration of inner loop. (default 500)
-* stopdualitygap: TRUE/FALSE. If TRUE, SPICER employs duality gap for stopping criterion of outer loop. Default TRUE.  -
-* stopIneqViolation: TRUE/FALSE. If TRUE, SPICER employs violation of inequality for stopping criterion of outer loop. Default FALSE
-* tolOuter:tollerance of stopping criteria of outer loop. (default 0.001)
-* tolInner: tollerance of stopping criteria of inner loop. (default tolOuter/1000)
+* optname: optimization solver for dual variable (rho) inner minimization: 'Newton' (default), 'BFGS'
+* stop_duality_gap: TRUE/FALSE. If TRUE, SPICER employs duality gap for stopping criterion of outer loop. Default TRUE.  -
+* stop_ineq_violation: TRUE/FALSE. If TRUE, SPICER employs violation of inequality for stopping criterion of outer loop. Default FALSE
+* outer_maxiter: maximum number of iterations of outer loop. (default 300)
+* inner_maxiter: maximum number of iterations of inner loop. (default 500)
+* tol_outer:tolerance of stopping criteria of outer loop. (default 0.001)
+* tol_inner: tolerance of stopping criteria of inner loop. (default tolOuter/1000)
+* miniter: minimum number of iterations of outer loop. (default 30)
+* tol_miniter: minimum relative improvement required for each outer iteration after miniter. (default 0.001)
 * calpha: increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)
+* incl_subw: TRUE/FALSE. If TRUE, Spicer includes the full NxM matrix of alpha coefficients. Default FALSE.
 * display: 1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.
 
 *Output*\
@@ -28,7 +32,7 @@ A SPICER model with the following components:
 * *sorted_kern_weight*: vector of non-zero kernel weights sorted by magnitude, scaled to sum to 1.
 * *opt* : list of SPICER options used in run
 * *history* : contains history of primal objective, dual objective, number of active kernels, and duality gap.
-
+* *kern_alpha* : If incl_subw is TRUE, the NxM matrix of alpha coefficients.
 **Prediction**\
 *Inputs*
 * *model* SPICER model
@@ -43,7 +47,7 @@ If prediction task is 'classification' and type is 'response' - output is predic
 If prediction task is 'classification' and type is 'probability' - output is probabilities of classes.
 
 **Citations** 
-1. V. J. Uzunangelov.*Prediction of cancer phenotypes through the integration of multi-omicdata and prior information.*  PhD thesis, UC Santa Cruz, 2019.
+1.  V. Uzunangelov, C. K. Wong, and J. Stuart. *Highly Accurate Cancer Phenotype Prediction with AKLIMATE, a Stacked Kernel Learner Integrating Multimodal Genomic Data and Pathway Knowledge.* bioRxiv, July 2020.
 2.  T. Suzuki and R. Tomioka.  *SpicyMKL: a fast algorithm for Multiple Kernel Learningwith thousands of kernels.* Machine Learning, 85(1-2):77–108, Oct. 2011. ISSN 0885-6125,1573-0565. 
 
 

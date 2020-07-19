@@ -18,13 +18,17 @@ spicer(K, yapp, C, opt = list())
  \item{loss}{type of loss function:'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,
  'square' (square loss, 0.5*(y - f(x))^2) for regression}
  \item{regname}{type of regularization: 'l1' (default), 'elasticnet'}
- \item{outerMaxIter}{maximum number of iteration of outer loop. (default 300)}
- \item{innerMaxIter}{maximum number of iteration of inner loop. (default 500)}
- \item{stopdualitygap}{TRUE/FALSE. If TRUE, Spicer employs duality gap for stopping criterion of outer loop. Default TRUE.}
- \item{stopIneqViolation}{TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE.}
-  \item{tolOuter}{tollerance of stopping criteria of outer loop. (default 0.001)}
-  \item{tolInner}{tollerance of stopping criteria of inner loop. (default tolOuter/1000)}
+ \item{optname}{optimization solver for dual variable (rho) inner minimization: 'Newton' (default), 'BFGS'}
+ \item{stop_duality_gap}{TRUE/FALSE. If TRUE, Spicer employs duality gap for stopping criterion of outer loop. Default TRUE.}
+ \item{stop_ineq_violation}{TRUE/FALSE. If TRUE, Spicer employs violation of inequality for stopping criterion of outer loop. Default FALSE.}
+ \item{outer_maxiter}{maximum number of iterations of outer loop. (default 300)}
+ \item{inner_maxiter}{maximum number of iterations of inner loop. (default 500)}
+ \item{tol_outer}{tolerance of stopping criteria of outer loop. (default 0.001)}
+ \item{tol_inner}{tolerance of stopping criteria of inner loop. (default tol_outer/1000)}
+ \item{miniter}{minimum number of iterations of outer loop. (default 30)}
+ \item{tol_miniter}{minimum relative improvement required for each outer iteration after miniter. (default 0.001)}
   \item{calpha}{increment factor of gamma: gamma^(t+1)=calpha*gamma^(t).  (default 10)}
+  \item{incl_subw}{TRUE/FALSE. If TRUE, Spicer includes the full NxM matrix of alpha coefficients. Default FALSE.}
   \item{display}{1:display no progress messages, 2(default):display outer loop progress messages, 3:display inner loop progress messaages.}
   }}
 }
@@ -38,13 +42,15 @@ A SPICER model with the following components:
   \item{sorted_kern_weight}{vector of non-zero kernel weights sorted by magnitude, scaled to sum to 1.}
   \item{opt}{list of SPICER options used in run.}
   \item{history}{contains history of primal objective, dual objective, number of active kernels, and duality gap.}
-  }
-  @references
-  \itemize{
-  \item  V. J. Uzunangelov.Prediction of cancer phenotypes through the integration of multi-omicdata and prior information.  PhD thesis, UC Santa Cruz, 2019
-  \item Suzuki,Tomioka.SpicyMKL: a fast algorithm for Multiple Kernel Learning with thousands of kernels. Mach Learn (2011) 85:77–108
+  \item{kern_alpha}{If incl_subw is TRUE, the NxM matrix of alpha coefficients.}
   }
 }
 \description{
 Port of Tomioka and Suzuki's SpicyMKL to R, expanded for multiclass and probability outputs.
+}
+\references{
+\itemize{
+  \item  V. Uzunangelov, C. K. Wong, and J. Stuart. Highly Accurate Cancer Phenotype Prediction with AKLIMATE, a Stacked Kernel Learner Integrating Multimodal Genomic Data and Pathway Knowledge. bioRxiv, July 2020.
+  \item Suzuki,Tomioka.SpicyMKL: a fast algorithm for Multiple Kernel Learning with thousands of kernels. Mach Learn (2011) 85:77–108
+  }
 }
