@@ -33,6 +33,7 @@ A SPICER model with the following components:
 * *opt* : list of SPICER options used in run
 * *history* : contains history of primal objective, dual objective, number of active kernels, and duality gap.
 * *kern_alpha* : If incl_subw is TRUE, the NxM matrix of alpha coefficients.
+
 **Prediction**\
 *Inputs*
 * *model* SPICER model
@@ -52,5 +53,5 @@ If prediction task is 'classification' and type is 'probability' - output is pro
 
 
 
-(c) Vlado Uzunangelov 2016  
+(c) Vladislav Uzunangelov 2016  
 uzunangelov@gmail.com
