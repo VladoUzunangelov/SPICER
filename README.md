@@ -2,6 +2,10 @@ This is an R port of Tomioka and Suzuki's SpicyMKL.
 SpicyMKL solves  both binary classification (hinge & logitstic losses) and regression (squared error loss) problems. SPICER solves binary classification (logistic only), regression (squared error loss) and multiclass problems (logistic loss). The latter is done by expanding the binary SpicyMKL solver via one-versus-one
 class pairs training approach. In addition, SPICER outputs class or probability predictions for binary/multiclass classification tasks.  
 
+**Installation**
+Requires devtools package. From an R interpreter do \
+devtools::install_github("VladoUzunangelov/SPICER")
+
 **Training**\
 *Inputs*\
 *K* : N x N x M array. the (i,j,m)-element contains the (i,j)-element of the m-th kernel gram matrix.\
