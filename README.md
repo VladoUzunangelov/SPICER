@@ -6,7 +6,7 @@ class pairs training approach. In addition, SPICER outputs class or probability 
 *Inputs*\
 *K* : N x N x M array. the (i,j,m)-element contains the (i,j)-element of the m-th kernel gram matrix.\
 *yapp* :  vector of length N with sample labels.  It should be a factor for binary/multiclass classification. \
-*C* : regularization parameter . Large values of C induce strong regularization. For L1 regularization C is a scalar: or elasticnet, C is a vector of length 2: C(1)|x| + C(2)x^2/2\
+*C* : regularization parameter . Large values of C induce strong regularization. For L1 regularization C is a scalar: for elasticnet, C is a vector of length 2: C(1)|x| + C(2)x^2/2\
 *opt* : list of options which control the behavior of SPICER:
 * loss: type of loss function:  'logit' (logistic regression, log(1+exp(- f(x)y))) for classification,'square' (square loss, 0.5*(y - f(x))^2) for regression
 * regname: type of regularization: 'l1' (default), 'elasticnet'
